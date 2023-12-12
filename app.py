@@ -7,13 +7,15 @@ from sqlalchemy import create_engine, \
     String, \
     JSON, \
     ForeignKey, \
-    DateTime
+    DateTime, \
+    text
 import os
 from datetime import datetime
 
 app = Flask(__name__)
 
-db_uri = os.environ["DB_URI"]
+# db_uri = os.environ["DB_URI"]
+db_uri = "postgresql://postgres:dEbpMuh1YPXZu21SxR4t@developeriq.cgfn0rdytwyv.ap-southeast-1.rds.amazonaws.com:5432/developeriq?sslmode=require"
 engine = create_engine(db_uri, echo=True)
 metadata = MetaData()
 
@@ -70,45 +72,54 @@ commits = Table(
 metadata.create_all(engine)
 
 
-@app.route("/pr-created-per-month", methods=['GET'])
+@app.route("/pr-created", methods=['GET'])
 def pr_created_per_month():
     with engine.connect() as conn:
         result = conn.execute(
-            "SELECT EXTRACT(MONTH FROM TO_DATE(pr_date, 'YYYY-MM-DD')) as month, COUNT(*) as pr_count "
-            "FROM pull_requests GROUP BY month ORDER BY month"
-        ).fetchall()
+            text("SELECT * FROM PULL_REQUESTS;")
+        ).all()
 
-    response = [{"month": int(row[0]), "pr_count": row[1]} for row in result]
+    response = [{"developer": get_developer_name(int(row[1])), "repo": row[2],
+                 "created_date": row[3]} for row in result]
     return jsonify(response)
 
 
-@app.route("/commits-count-per-push", methods=['GET'])
+@app.route("/push-data", methods=['GET'])
 def commits_count_per_push():
     with engine.connect() as conn:
         result = conn.execute(
-            "SELECT repo, SUM(commits_count) as total_commits FROM push GROUP BY repo"
-        ).fetchall()
+            text("SELECT * FROM push;")
+        ).all()
 
-    response = [{"repo": row[0], "total_commits": row[1]} for row in result]
+    response = [{"developer": get_developer_name(int(row[1])), "repo": row[2],
+                 "commits_count": row[3], "created_at": row[4]} for row in result]
     return jsonify(response)
 
 
-@app.route("/file-changes-per-commit", methods=['GET'])
+@app.route("/commits-data", methods=['GET'])
 def file_changes_per_commit():
     with engine.connect() as conn:
         result = conn.execute(
-            "SELECT repo, SUM(files_added) as total_added, SUM(files_removed) as total_removed, "
-            "SUM(files_modified) as total_modified FROM commits GROUP BY repo"
+            text("select * from commits;")
         ).fetchall()
 
-    response = [{"repo": row[0], "total_added": row[1],
-                 "total_removed": row[2], "total_modified": row[3]} for row in result]
+    response = [{"developer": get_developer_name(int(row[1])), "push_id": row[2],
+                 "repo": row[3], "files_added": row[4], "files_removed": row[5], "files_modified": row[6], "created_at": row[7]} for row in result]
     return jsonify(response)
 
 
 @app.route("/", methods=["GET"])
 def health_check():
     return jsonify({"status": "analytics service is healthy"})
+
+
+def get_developer_name(developer_id):
+    with engine.connect() as conn:
+        result = conn.execute(
+            text(f"SELECT username FROM developer WHERE id={developer_id};")
+        ).scalar()
+
+    return result
 
 
 if __name__ == '__main__':
