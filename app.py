@@ -1,16 +1,30 @@
 from flask import Flask, jsonify
-from sqlalchemy import create_engine, MetaData, Table, String, Integer, Column, ForeignKey
+from sqlalchemy import create_engine, \
+    Table, \
+    Column, \
+    MetaData, \
+    Integer, \
+    String, \
+    JSON, \
+    ForeignKey, \
+    DateTime
 import os
+from datetime import datetime
 
 app = Flask(__name__)
 
-db_uri = os.environ.get(
-    "DB_URI", "postgresql://postgres:dEbpMuh1YPXZu21SxR4t@developeriq.cgfn0rdytwyv.ap-southeast-1.rds.amazonaws.com:5432/developeriq?sslmode=require"
-)
+db_uri = os.environ["DB_URI"]
 engine = create_engine(db_uri, echo=True)
 metadata = MetaData()
 
 # Define Tables
+github_event = Table(
+    "github_events",
+    metadata,
+    Column('id', Integer, primary_key=True, autoincrement=True),
+    Column('payload', JSON),
+)
+
 developer = Table(
     'developer',
     metadata,
@@ -24,7 +38,8 @@ pull_requests = Table(
     Column('id', Integer, primary_key=True, autoincrement=True),
     Column('developer_id', ForeignKey('developer.id'), nullable=False),
     Column('repo', String, nullable=False),
-    Column('pr_date', String, nullable=False),
+    Column('created_at', DateTime,
+           default=datetime.now()),
 )
 
 push = Table(
@@ -34,6 +49,8 @@ push = Table(
     Column('developer_id', ForeignKey('developer.id'), nullable=False),
     Column('repo', String, nullable=False),
     Column('commits_count', Integer, nullable=False),
+    Column('created_at', DateTime,
+           default=datetime.now()),
 )
 
 commits = Table(
@@ -45,9 +62,11 @@ commits = Table(
     Column('repo', String, nullable=False),
     Column('files_added', Integer, nullable=False),
     Column('files_removed', Integer, nullable=False),
-    Column('files_modified', Integer, nullable=False)
+    Column('files_modified',
+           Integer, nullable=False),
+    Column('created_at', DateTime,
+           default=datetime.now()),
 )
-
 metadata.create_all(engine)
 
 
