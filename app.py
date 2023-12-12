@@ -14,8 +14,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-# db_uri = os.environ["DB_URI"]
-db_uri = "postgresql://postgres:dEbpMuh1YPXZu21SxR4t@developeriq.cgfn0rdytwyv.ap-southeast-1.rds.amazonaws.com:5432/developeriq?sslmode=require"
+db_uri = os.environ["DB_URI"]
 engine = create_engine(db_uri, echo=True)
 metadata = MetaData()
 

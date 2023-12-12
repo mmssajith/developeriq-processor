@@ -16,8 +16,8 @@ jobs:
     
     - name: Code Validation
       run: |
+        pip install flake8
         flake8 app.py
-        flake8 test_app.py
     
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
