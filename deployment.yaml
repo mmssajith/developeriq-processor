@@ -1,0 +1,50 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: analytics-deployment
+  namespace: developeriq
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: analytics
+  template:
+    metadata:
+      labels:
+        app: analytics
+    spec:
+      containers:
+      - name: analytics
+        image: 337689099048.dkr.ecr.ap-southeast-1.amazonaws.com/analytics:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 80
+        resources:
+          limits:
+            cpu: 1
+            memory: 2Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        env:
+        - name: DB_URI
+          valueFrom:
+            secretKeyRef:
+              name: developeriq-secrets
+              key: DB_URI
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: analytics-service
+  namespace: developeriq
+  labels:
+    app: analytics
+spec:
+  selector:
+    app: analytics
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: LoadBalancer
