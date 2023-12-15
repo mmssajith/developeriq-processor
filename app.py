@@ -5,7 +5,6 @@ from sqlalchemy import create_engine, \
     MetaData, \
     Integer, \
     String, \
-    JSON, \
     ForeignKey, \
     DateTime, \
     text
@@ -191,6 +190,7 @@ def get_pull_requests_data():
             pull_requests_data.append(pull_request_entry)
 
     return jsonify(pull_requests_data)
+
 
 @app.route("/", methods=["GET"])
 def health_check():
