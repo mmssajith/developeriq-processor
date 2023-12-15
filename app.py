@@ -125,7 +125,7 @@ def get_developers_data():
                 SUM(files_removed) AS total_files_removed,
                 SUM(files_modified) AS total_files_modified
             FROM commits
-            GROUP BY developer_id, push_id
+            GROUP BY developer_id, push_id;
         '''
         result = connection.execute(text(query)).fetchall()
 
@@ -170,7 +170,7 @@ def get_pull_requests_data():
     query = '''
         SELECT pr_process.*, pull_requests.developer_id
         FROM pr_process
-        JOIN pull_requests ON pull_requests.number = pr_process.pr_number
+        JOIN pull_requests ON pull_requests.number = pr_process.pr_number;
     '''
 
     with engine.connect() as connection:
@@ -181,6 +181,7 @@ def get_pull_requests_data():
             pull_request_entry = {
                 'id': row.id,
                 'pr_number': row.pr_number,
+                'developer_name': get_developer_name(row.developer_id),
                 'developer_id': row.developer_id,
                 'repo': row.repo,
                 'created_at': row.created_at.isoformat(),
