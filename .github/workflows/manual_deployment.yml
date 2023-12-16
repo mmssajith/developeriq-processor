@@ -7,6 +7,10 @@ on:
         description: 'Branch to deploy'
         required: true
         default: 'main'
+      image_tag:
+        description: 'Docker image tag'
+        required: true
+        default: 'latest'
 
 jobs:
   deploy:
@@ -14,11 +18,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-
     - name: Check out code
       uses: actions/checkout@v2
     
-    - name: Install Dependancies
+    - name: Install Dependencies
       run: |
         pip install -r requirements.txt
 
@@ -52,12 +55,12 @@ jobs:
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         ECR_REPOSITORY: analytics
-        IMAGE_TAG: latest
+        IMAGE_TAG: ${{ github.event.inputs.image_tag }}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
         docker push $ECR_REGISTRY/$ECR_REPOSITORY
     
-    - name: Update  Kube Config
+    - name: Update Kube Config
       run: aws eks update-kubeconfig --name developeriq_eks --region ap-southeast-1
     
     - name: Deploy
