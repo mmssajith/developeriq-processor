@@ -7,10 +7,6 @@ on:
         description: 'Branch to deploy'
         required: true
         default: 'main'
-      image_tag:
-        description: 'Docker image tag'
-        required: true
-        default: 'latest'
 
 jobs:
   deploy:
@@ -54,15 +50,12 @@ jobs:
     - name: Build, tag, and push image to Amazon ECR
       env:
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: analytics
-        IMAGE_TAG: ${{ github.event.inputs.image_tag }}
       run: |
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+        make build
     
     - name: Update Kube Config
       run: aws eks update-kubeconfig --name developeriq_eks --region ap-southeast-1
     
     - name: Deploy
       run: |
-        kubectl apply -f deployment.yaml
+        make deploy
