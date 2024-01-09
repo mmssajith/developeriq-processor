@@ -3,7 +3,7 @@ import requests
 
 
 class AppTest(unittest.TestCase):
-    base_url = "http://aef8a6d87f0434164b0811d76b2ed63b-371865466.ap-southeast-1.elb.amazonaws.com"
+    base_url = "http://a303ede1d4e774c069e082aa09a1468c-1467826700.ap-southeast-1.elb.amazonaws.com"
 
     def test_pr_created_per_month(self):
         url = f"{self.base_url}/pr-created"
