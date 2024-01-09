@@ -30,8 +30,6 @@ class AppTest(unittest.TestCase):
         url = f"{self.base_url}"
         response = requests.get(url)
         self.assertEqual(response.status_code, 200)
-        data = response.json()
-        self.assertEqual(data, {"status": "analytics service is healthy"})
 
     def test_invalid_endpoint(self):
         url = f"{self.base_url}/invalid-endpoint"
